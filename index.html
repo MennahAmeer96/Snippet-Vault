@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnippetVault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-top">
+                <button id="theme-toggle" class="theme-toggle" title="Toggle theme">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+            </div>
+            <h1 class="logo" id="typing-logo">
+                <span class="typing-text">SnippetVault</span>
+                <span class="cursor">|</span>
+            </h1>
+            <p class="tagline">Save, organize, and find your code snippets</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="form-section">
+                <div class="form-container">
+                    <h2>Add New Snippet</h2>
+                    <form id="snippet-form" class="snippet-form">
+                        <div class="form-group">
+                            <label for="language-input">Language</label>
+                            <div class="language-dropdown-container">
+                                <input 
+                                    type="text" 
+                                    id="language-input" 
+                                    placeholder="Search or select a language..."
+                                    autocomplete="off"
+                                    required
+                                >
+                                <div id="language-dropdown" class="language-dropdown" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="code-input">Code Snippet</label>
+                            <textarea 
+                                id="code-input" 
+                                placeholder="Paste your code snippet here..."
+                                rows="8"
+                                required
+                            ></textarea>
+                        </div>
+                        <button type="submit" id="save-btn" class="save-btn">
+                            Save Snippet
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="controls-section">
+                <div class="controls-container">
+                    <div class="search-group">
+                        <label for="search-input">Search Snippets</label>
+                        <input 
+                            type="text" 
+                            id="search-input" 
+                            placeholder="Search by language..."
+                            class="search-input"
+                        >
+                    </div>
+                    <div class="stats">
+                        <span id="snippet-count">0 snippets</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="snippets-section">
+                <div id="loading" class="loading" style="display: none;">
+                    Loading snippets...
+                </div>
+                <div id="error-message" class="error-message" style="display: none;"></div>
+                <div id="snippets-grid" class="snippets-grid">
+                </div>
+                <div id="no-snippets" class="no-snippets" style="display: none;">
+                    <div class="no-snippets-content">
+                        <h3>No snippets found</h3>
+                        <p>Start by adding your first code snippet above!</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy;2025 SnippetVault</p>
+            <p>Built with ❤️ by Mennah Ameer for developers.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
