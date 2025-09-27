@@ -2,6 +2,9 @@ const snippetForm = document.getElementById('snippet-form');
 const languageInput = document.getElementById('language-input');
 const languageDropdown = document.getElementById('language-dropdown');
 const codeInput = document.getElementById('code-input');
+const notesInput = document.getElementById('notes-input');
+const tagsInput = document.getElementById('tags-input');
+const suggestTagsBtn = document.getElementById('suggest-tags-btn');
 const searchInput = document.getElementById('search-input');
 const snippetsGrid = document.getElementById('snippets-grid');
 const saveBtn = document.getElementById('save-btn');
@@ -88,6 +91,8 @@ function addSnippetToSession(snippet) {
         id: Date.now(),
         language: snippet.language,
         code: snippet.code,
+        notes: snippet.notes || '',
+        tags: snippet.tags || [],
         created_at: new Date().toISOString()
     };
     snippets.unshift(newSnippet);
@@ -108,8 +113,12 @@ function searchSnippetsInSession(searchTerm) {
         return snippets;
     }
     
+    const term = searchTerm.toLowerCase();
     return snippets.filter(snippet => 
-        snippet.language.toLowerCase().includes(searchTerm.toLowerCase())
+        snippet.language.toLowerCase().includes(term) ||
+        snippet.code.toLowerCase().includes(term) ||
+        snippet.notes.toLowerCase().includes(term) ||
+        (snippet.tags && snippet.tags.some(tag => tag.toLowerCase().includes(term)))
     );
 }
 
@@ -164,6 +173,15 @@ function createSnippetCard(snippet) {
     const actions = document.createElement('div');
     actions.className = 'snippet-actions';
     
+    const explainBtn = document.createElement('button');
+    explainBtn.className = 'action-btn explain-btn';
+    explainBtn.innerHTML = '<i class="fas fa-magic"></i>';
+    explainBtn.title = 'Explain snippet with AI';
+    explainBtn.onclick = (e) => {
+        e.stopPropagation();
+        explainSnippet(snippet.code, snippet.language);
+    };
+    
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'action-btn delete-btn';
     deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
@@ -173,6 +191,7 @@ function createSnippetCard(snippet) {
         deleteSnippet(snippet.id);
     };
     
+    actions.appendChild(explainBtn);
     actions.appendChild(deleteBtn);
     
     header.appendChild(info);
@@ -199,6 +218,35 @@ function createSnippetCard(snippet) {
     
     card.appendChild(header);
     card.appendChild(codeContainer);
+    
+    if (snippet.notes && snippet.notes.trim()) {
+        const notesContainer = document.createElement('div');
+        notesContainer.className = 'snippet-notes';
+        notesContainer.innerHTML = marked.parse(snippet.notes);
+        card.appendChild(notesContainer);
+    }
+    
+    if (snippet.tags && snippet.tags.length > 0) {
+        const tagsContainer = document.createElement('div');
+        tagsContainer.className = 'snippet-tags';
+        
+        snippet.tags.forEach(tag => {
+            if (tag.trim()) {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag.trim();
+                tagsContainer.appendChild(tagElement);
+            }
+        });
+        
+        if (tagsContainer.children.length > 0) {
+            card.appendChild(tagsContainer);
+        }
+    }
+    
+    if (typeof hljs !== 'undefined') {
+        hljs.highlightElement(codeElement);
+    }
     
     setTimeout(() => {
         card.classList.remove('new');
@@ -244,23 +292,30 @@ function searchSnippets(searchTerm) {
     }
 }
 
-function saveSnippet(language, code) {
+function saveSnippet(language, code, notes, tags) {
     try {
         saveBtn.disabled = true;
         saveBtn.textContent = 'Saving...';
         
+        const tagArray = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+        
         const newSnippet = addSnippetToSession({
             language: language.trim(),
-            code: code.trim()
+            code: code.trim(),
+            notes: notes.trim(),
+            tags: tagArray
         });
         
         console.log('Snippet saved:', newSnippet);
         
         languageInput.value = '';
         codeInput.value = '';
+        notesInput.value = '';
+        tagsInput.value = '';
         
         codeInput.style.height = 'auto';
         codeInput.style.height = '120px';
+        notesInput.style.height = 'auto';
         
         fetchSnippets();
         
@@ -285,6 +340,8 @@ snippetForm.addEventListener('submit', (e) => {
     
     const language = languageInput.value.trim();
     const code = codeInput.value.trim();
+    const notes = notesInput.value.trim();
+    const tags = tagsInput.value.trim();
     
     if (!language || !code) {
         showError('Please fill in both language and code fields.');
@@ -292,7 +349,7 @@ snippetForm.addEventListener('submit', (e) => {
     }
     
     hideError();
-    saveSnippet(language, code);
+    saveSnippet(language, code, notes, tags);
 });
 
 searchInput.addEventListener('input', (e) => {
@@ -324,6 +381,11 @@ codeInput.addEventListener('input', function() {
     this.style.height = Math.max(120, this.scrollHeight) + 'px';
 });
 
+notesInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.max(80, this.scrollHeight) + 'px';
+});
+
 function validateForm() {
     const language = languageInput.value.trim();
     const code = codeInput.value.trim();
@@ -333,6 +395,8 @@ function validateForm() {
 
 languageInput.addEventListener('input', validateForm);
 codeInput.addEventListener('input', validateForm);
+notesInput.addEventListener('input', validateForm);
+tagsInput.addEventListener('input', validateForm);
 
 languageInput.addEventListener('input', (e) => {
     const searchTerm = e.target.value;
@@ -533,3 +597,240 @@ function updateSessionInfo() {
     const snippetCount = loadSnippetsFromSession().length;
     console.log(`Session storage: ${snippetCount} snippets loaded`);
 }
+
+// async function callGeminiAPI(prompt, code, type) {
+//     try {
+//         if (typeof CONFIG === 'undefined') {
+//             throw new Error('Configuration not loaded. Please ensure config.js is included in your HTML.');
+//         }
+
+//         if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY.includes('PLACEHOLDER')) {
+//             throw new Error('PLACEHOLDER FOR GEMINI API KEY - Please replace the placeholder with your actual API key in config.js. Get your API key from: https://makersuite.google.com/app/apikey');
+//         }
+
+//         let fullPrompt;
+
+//         if (type === 'explain') {
+//             fullPrompt = `As a code expert, please explain the following code snippet in detail. Break down what it does, how it works, and provide insights about its functionality, best practices, and potential improvements. Be thorough but clear in your explanation.
+
+// Code to explain:
+// \`\`\`
+// ${code}
+// \`\`\`
+
+// ${prompt}`;
+//         } else if (type === 'tags') {
+//             fullPrompt = `Analyze the following code snippet and suggest 3-5 relevant tags/keywords that would help categorize and search for this code. Focus on the programming language, frameworks, concepts, and functionality. Return only the tags separated by commas, nothing else.
+
+// Code:
+// \`\`\`
+// ${code}
+// \`\`\`
+
+// ${prompt}`;
+//         } else {
+//             fullPrompt = `${prompt}\n\nCode:\n\`\`\`\n${code || ''}\n\`\`\``;
+//         }
+
+//         let response;
+//         const modelNames = [
+//             'gemini-2.5-pro',
+//             'gemini-2.5-flash',
+//         ];
+        
+//         let lastError = null;
+        
+//         for (const modelName of modelNames) {
+//             try {
+//                 response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${CONFIG.GEMINI_API_KEY}`, {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json',
+//                     },
+//                     body: JSON.stringify({
+//                         contents: [{
+//                             parts: [{
+//                                 text: fullPrompt
+//                             }]
+//                         }],
+//                         generationConfig: {
+//                             temperature: 0.7,
+//                             topK: 40,
+//                             topP: 0.95,
+//                             maxOutputTokens: 2048,
+//                         }
+//                     })
+//                 });
+                
+//                 if (response.ok) {
+//                     console.log(`✅ Successfully using model: ${modelName}`);
+//                     break;
+//                 } else {
+//                     const errorData = await response.json().catch(() => ({}));
+//                     lastError = `Model ${modelName} failed: ${response.status} - ${errorData.error?.message || 'Unknown error'}`;
+//                     console.warn(`⚠️ ${lastError}`);
+//                 }
+//             } catch (error) {
+//                 lastError = `Model ${modelName} failed: ${error.message}`;
+//                 console.warn(`⚠️ ${lastError}`);
+//             }
+//         }
+
+//         if (!response || !response.ok) {
+//             throw new Error(`All Gemini models failed. Last error: ${lastError}`);
+//         }
+
+//         const data = await response.json();
+        
+//         if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+//             throw new Error('Invalid response from Gemini API');
+//         }
+
+//         return data.candidates[0].content.parts[0].text;
+//     } catch (error) {
+//         console.error('Error calling Gemini API:', error);
+//         throw error;
+//     }
+// }
+
+
+//* New callGeminiAPI using Netlify function
+async function callGeminiAPI(prompt, code, type) {
+    try {
+    const response = await fetch('/.netlify/functions/gemini', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt, code, type }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'The AI service failed.');
+    }
+
+    const data = await response.json();
+    return data.response;
+
+    } catch (error) {
+    console.error('Error calling our Netlify function:', error);
+    throw error;
+    }
+}
+
+function createAIModal(title, content, isLoading = false) {
+    const existingModal = document.querySelector('.ai-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'ai-modal';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'ai-modal-content';
+    
+    const header = document.createElement('div');
+    header.className = 'ai-modal-header';
+    
+    const titleElement = document.createElement('h3');
+    titleElement.textContent = title;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'ai-modal-close';
+    closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    closeBtn.onclick = () => modal.remove();
+    
+    header.appendChild(titleElement);
+    header.appendChild(closeBtn);
+    
+    const body = document.createElement('div');
+    body.className = 'ai-modal-body';
+    
+    if (isLoading) {
+        body.innerHTML = '<div class="ai-loading"><i class="fas fa-spinner"></i>Processing with AI...</div>';
+    } else {
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'ai-explanation';
+        contentDiv.innerHTML = marked.parse(content);
+        body.appendChild(contentDiv);
+    }
+    
+    modalContent.appendChild(header);
+    modalContent.appendChild(body);
+    modal.appendChild(modalContent);
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+    
+    document.body.appendChild(modal);
+    return { modal, body };
+}
+
+async function explainSnippet(code, language) {
+    const { modal, body } = createAIModal('AI Code Explanation', '', true);
+    
+    try {
+        const prompt = `Please explain this ${language} code snippet in detail.`;
+        const explanation = await callGeminiAPI(prompt, code, 'explain');
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'ai-explanation';
+        contentDiv.innerHTML = marked.parse(explanation);
+        body.innerHTML = '';
+        body.appendChild(contentDiv);
+        
+    } catch (error) {
+        body.innerHTML = `<div class="ai-explanation"><p style="color: var(--error-color);">Failed to get AI explanation: ${error.message}</p><p>💡 Tip: Make sure your API key is valid and try the test page to check available models.</p></div>`;
+    }
+}
+
+async function suggestTags() {
+    const code = codeInput.value.trim();
+    const language = languageInput.value.trim();
+    
+    if (!code) {
+        showError('Please enter some code first before getting tag suggestions.');
+        return;
+    }
+    
+    const originalText = suggestTagsBtn.innerHTML;
+    suggestTagsBtn.disabled = true;
+    suggestTagsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting tags...';
+    
+    try {
+        const prompt = `Suggest relevant tags for this ${language} code snippet.`;
+        const tags = await callGeminiAPI(prompt, code, 'tags');
+        
+        const cleanTags = tags.replace(/[^\w\s,.-]/g, '').trim();
+        tagsInput.value = cleanTags;
+        
+        suggestTagsBtn.innerHTML = '<i class="fas fa-check"></i> Done!';
+        setTimeout(() => {
+            suggestTagsBtn.innerHTML = originalText;
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error getting tag suggestions:', error);
+        showError(`Failed to get tag suggestions: ${error.message}`);
+        suggestTagsBtn.innerHTML = originalText;
+    } finally {
+        setTimeout(() => {
+            suggestTagsBtn.disabled = false;
+        }, 2000);
+    }
+}
+
+suggestTagsBtn.addEventListener('click', suggestTags);
