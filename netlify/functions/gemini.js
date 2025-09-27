@@ -13,7 +13,7 @@ exports.handler = async function (event, context) {
 
         let fullPrompt;
         if (type === 'explain') {
-            fullPrompt = `As a detailed code expert, please provide a comprehensive explanation of the following code snippet, covering its function, logic, and any relevant best practices. Format your response using Markdown. \n\nCode:\n\`\`\`${code}\`\`\`\n\nExplanation:`;
+            fullPrompt = `As a concise code expert, please provide a detailed but brief explanation of the following code snippet, covering its function, logic, and best practices. **Be thorough but do not exceed 500 words.** Format your response using Markdown. \n\nCode:\n\`\`\`${code}\`\`\`\n\nExplanation:`;
         } else if (type === 'tags') {
             fullPrompt = `Analyze this code and suggest 3-5 relevant lowercase tags. Return ONLY the tags separated by commas.\n\nCode:\n\`\`\`${code}\`\`\`\n\nTags:`;
         } else {
