@@ -1,6 +1,12 @@
 # SnippetVault
 
-**Live Demo**: [https://snippetvaultmennah.netlify.app/](https://snippetvaultmennah.netlify.app/)
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/90daf5cc-6c2b-45b2-a3fc-316bc8529564" width="500" controls></video>
+</p>
+
+---
+
+**Production URL**: [https://snippetvaultmennah.netlify.app/](https://snippetvaultmennah.netlify.app/)
 
 A powerful web application for storing and organizing code snippets with AI-powered features including live syntax highlighting, markdown notes, and intelligent code explanations.
 
