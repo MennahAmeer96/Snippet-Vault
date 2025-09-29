@@ -6,9 +6,9 @@
 
 ---
 
-**Production URL**: [https://snippetvaultmennah.netlify.app/](https://snippetvaultmennah.netlify.app/)
+**🚀 Powered by Google Gemini AI** - Experience the future of code organization with intelligent explanations, smart tagging, and AI-driven insights that understand your code like never before.
 
-A powerful web application for storing and organizing code snippets with AI-powered features including live syntax highlighting, markdown notes, and intelligent code explanations.
+A revolutionary web application that transforms how developers store, organize, and understand their code snippets. Built with cutting-edge AI technology from Google's Gemini API, SnippetVault doesn't just store your code—it comprehends it, explains it, and helps you organize it intelligently.
 
 ## Features
 
