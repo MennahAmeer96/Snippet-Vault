@@ -1,14 +1,14 @@
 # SnippetVault
 
+**🚀 Powered by Google Gemini AI** - Experience the future of code organization with intelligent explanations, smart tagging, and AI-driven insights that understand your code like never before.
+
+A revolutionary web application that transforms how developers store, organize, and understand their code snippets. Built with cutting-edge AI technology from Google's Gemini API, SnippetVault doesn't just store your code—it comprehends it, explains it, and helps you organize it intelligently.
+
 <p align="center">
   <video src="https://github.com/user-attachments/assets/90daf5cc-6c2b-45b2-a3fc-316bc8529564" width="500" controls></video>
 </p>
 
 ---
-
-**🚀 Powered by Google Gemini AI** - Experience the future of code organization with intelligent explanations, smart tagging, and AI-driven insights that understand your code like never before.
-
-A revolutionary web application that transforms how developers store, organize, and understand their code snippets. Built with cutting-edge AI technology from Google's Gemini API, SnippetVault doesn't just store your code—it comprehends it, explains it, and helps you organize it intelligently.
 
 ## Features
 
