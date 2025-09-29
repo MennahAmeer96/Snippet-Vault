@@ -787,10 +787,10 @@ async function explainSnippet(code, language) {
         const prompt = `Please explain this ${language} code snippet in detail.`;
 
         // To use the Deployed version, un-comment this:
-        // const explanation = await callGeminiAPIForDeployedVersion(prompt, code, 'explain');
+        const explanation = await callGeminiAPIForDeployedVersion(prompt, code, 'explain');
 
         // To use the Local version, un-comment this:
-        const explanation = await callGeminiAPIForLocalVersion(prompt, code, 'explain');
+        // const explanation = await callGeminiAPIForLocalVersion(prompt, code, 'explain');
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'ai-explanation';
@@ -820,10 +820,10 @@ async function suggestTags() {
         const prompt = `Suggest relevant tags for this ${language} code snippet.`;
 
         // To use the Deployed version, un-comment this:
-        // const tags = await callGeminiAPIForDeployedVersion(prompt, code, 'tags');
+        const tags = await callGeminiAPIForDeployedVersion(prompt, code, 'tags');
 
         // To use the Local version, un-comment this:
-        const tags = await callGeminiAPIForLocalVersion(prompt, code, 'tags');
+        // const tags = await callGeminiAPIForLocalVersion(prompt, code, 'tags');
         
         const cleanTags = tags.replace(/[^\w\s,.-]/g, '').trim();
         tagsInput.value = cleanTags;
