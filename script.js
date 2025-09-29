@@ -598,104 +598,105 @@ function updateSessionInfo() {
     console.log(`Session storage: ${snippetCount} snippets loaded`);
 }
 
-// async function callGeminiAPI(prompt, code, type) {
-//     try {
-//         if (typeof CONFIG === 'undefined') {
-//             throw new Error('Configuration not loaded. Please ensure config.js is included in your HTML.');
-//         }
+/// [callGeminiAPIForLocalVersion] To run the Local Version
+async function callGeminiAPIForLocalVersion(prompt, code, type) {
+    try {
+        if (typeof CONFIG === 'undefined') {
+            throw new Error('Configuration not loaded. Please ensure config.js is included in your HTML.');
+        }
 
-//         if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY.includes('PLACEHOLDER')) {
-//             throw new Error('PLACEHOLDER FOR GEMINI API KEY - Please replace the placeholder with your actual API key in config.js. Get your API key from: https://makersuite.google.com/app/apikey');
-//         }
+        if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY.includes('PLACEHOLDER')) {
+            throw new Error('PLACEHOLDER FOR GEMINI API KEY - Please replace the placeholder with your actual API key in config.js. Get your API key from: https://makersuite.google.com/app/apikey');
+        }
 
-//         let fullPrompt;
+        let fullPrompt;
 
-//         if (type === 'explain') {
-//             fullPrompt = `As a code expert, please explain the following code snippet in detail. Break down what it does, how it works, and provide insights about its functionality, best practices, and potential improvements. Be thorough but clear in your explanation.
+        if (type === 'explain') {
+            fullPrompt = `As a code expert, please explain the following code snippet in detail. Break down what it does, how it works, and provide insights about its functionality, best practices, and potential improvements. Be thorough but clear in your explanation.
 
-// Code to explain:
-// \`\`\`
-// ${code}
-// \`\`\`
+Code to explain:
+\`\`\`
+${code}
+\`\`\`
 
-// ${prompt}`;
-//         } else if (type === 'tags') {
-//             fullPrompt = `Analyze the following code snippet and suggest 3-5 relevant tags/keywords that would help categorize and search for this code. Focus on the programming language, frameworks, concepts, and functionality. Return only the tags separated by commas, nothing else.
+${prompt}`;
+        } else if (type === 'tags') {
+            fullPrompt = `Analyze the following code snippet and suggest 3-5 relevant tags/keywords that would help categorize and search for this code. Focus on the programming language, frameworks, concepts, and functionality. Return only the tags separated by commas, nothing else.
 
-// Code:
-// \`\`\`
-// ${code}
-// \`\`\`
+Code:
+\`\`\`
+${code}
+\`\`\`
 
-// ${prompt}`;
-//         } else {
-//             fullPrompt = `${prompt}\n\nCode:\n\`\`\`\n${code || ''}\n\`\`\``;
-//         }
+${prompt}`;
+        } else {
+            fullPrompt = `${prompt}\n\nCode:\n\`\`\`\n${code || ''}\n\`\`\``;
+        }
 
-//         let response;
-//         const modelNames = [
-//             'gemini-2.5-pro',
-//             'gemini-2.5-flash',
-//         ];
+        let response;
+        const modelNames = [
+            'gemini-2.5-pro',
+            'gemini-2.5-flash',
+        ];
         
-//         let lastError = null;
+        let lastError = null;
         
-//         for (const modelName of modelNames) {
-//             try {
-//                 response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${CONFIG.GEMINI_API_KEY}`, {
-//                     method: 'POST',
-//                     headers: {
-//                         'Content-Type': 'application/json',
-//                     },
-//                     body: JSON.stringify({
-//                         contents: [{
-//                             parts: [{
-//                                 text: fullPrompt
-//                             }]
-//                         }],
-//                         generationConfig: {
-//                             temperature: 0.7,
-//                             topK: 40,
-//                             topP: 0.95,
-//                             maxOutputTokens: 2048,
-//                         }
-//                     })
-//                 });
+        for (const modelName of modelNames) {
+            try {
+                response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${CONFIG.GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: fullPrompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 2048,
+                        }
+                    })
+                });
                 
-//                 if (response.ok) {
-//                     console.log(`✅ Successfully using model: ${modelName}`);
-//                     break;
-//                 } else {
-//                     const errorData = await response.json().catch(() => ({}));
-//                     lastError = `Model ${modelName} failed: ${response.status} - ${errorData.error?.message || 'Unknown error'}`;
-//                     console.warn(`⚠️ ${lastError}`);
-//                 }
-//             } catch (error) {
-//                 lastError = `Model ${modelName} failed: ${error.message}`;
-//                 console.warn(`⚠️ ${lastError}`);
-//             }
-//         }
+                if (response.ok) {
+                    console.log(`✅ Successfully using model: ${modelName}`);
+                    break;
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    lastError = `Model ${modelName} failed: ${response.status} - ${errorData.error?.message || 'Unknown error'}`;
+                    console.warn(`⚠️ ${lastError}`);
+                }
+            } catch (error) {
+                lastError = `Model ${modelName} failed: ${error.message}`;
+                console.warn(`⚠️ ${lastError}`);
+            }
+        }
 
-//         if (!response || !response.ok) {
-//             throw new Error(`All Gemini models failed. Last error: ${lastError}`);
-//         }
+        if (!response || !response.ok) {
+            throw new Error(`All Gemini models failed. Last error: ${lastError}`);
+        }
 
-//         const data = await response.json();
+        const data = await response.json();
         
-//         if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-//             throw new Error('Invalid response from Gemini API');
-//         }
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            throw new Error('Invalid response from Gemini API');
+        }
 
-//         return data.candidates[0].content.parts[0].text;
-//     } catch (error) {
-//         console.error('Error calling Gemini API:', error);
-//         throw error;
-//     }
-// }
+        return data.candidates[0].content.parts[0].text;
+    } catch (error) {
+        console.error('Error calling Gemini API:', error);
+        throw error;
+    }
+}
 
 
-//* New callGeminiAPI using Netlify function
-async function callGeminiAPI(prompt, code, type) {
+/// [callGeminiAPIForDeployedVersion] To run the Deployed Version
+async function callGeminiAPIForDeployedVersion(prompt, code, type) {
     try {
     const response = await fetch('/.netlify/functions/gemini', {
         method: 'POST',
@@ -784,7 +785,12 @@ async function explainSnippet(code, language) {
     
     try {
         const prompt = `Please explain this ${language} code snippet in detail.`;
-        const explanation = await callGeminiAPI(prompt, code, 'explain');
+
+        // To use the Deployed version, un-comment this:
+        // const explanation = await callGeminiAPIForDeployedVersion(prompt, code, 'explain');
+
+        // To use the Local version, un-comment this:
+        const explanation = await callGeminiAPIForLocalVersion(prompt, code, 'explain');
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'ai-explanation';
@@ -812,7 +818,12 @@ async function suggestTags() {
     
     try {
         const prompt = `Suggest relevant tags for this ${language} code snippet.`;
-        const tags = await callGeminiAPI(prompt, code, 'tags');
+
+        // To use the Deployed version, un-comment this:
+        // const tags = await callGeminiAPIForDeployedVersion(prompt, code, 'tags');
+
+        // To use the Local version, un-comment this:
+        const tags = await callGeminiAPIForLocalVersion(prompt, code, 'tags');
         
         const cleanTags = tags.replace(/[^\w\s,.-]/g, '').trim();
         tagsInput.value = cleanTags;
